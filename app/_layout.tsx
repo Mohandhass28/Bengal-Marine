@@ -1,21 +1,41 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import * as SplashScreen from "expo-splash-screen";
+import Constants from "expo-constants";
+import React, { useState } from "react";
+import { useFonts } from "expo-font";
+import { Redirect, Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { useColorScheme } from "@/core/hooks/useColorScheme";
+import { LocalStorageImpl } from "@/data/source/local/local_storage";
+import { useAuthStore } from "@/store/useAuth";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const { AuthCheck, status } = useAuthStore((state) => state);
+
+  const [isLogin, setisLogin] = useState<boolean>();
+
+  const LoginCheck = async () => {
+    if (AuthCheck === undefined) {
+      return;
+    }
+    await AuthCheck();
+  };
+
+  useEffect(() => {
+    LoginCheck();
+  }, []);
 
   useEffect(() => {
     if (loaded) {
@@ -28,11 +48,18 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <Stack />
+      {status ? (
+        <>
+          <Redirect href={"/home"} />
+        </>
+      ) : (
+        <>
+          <Redirect href={"/auth"} />
+        </>
+      )}
+
       <StatusBar style="auto" />
     </ThemeProvider>
   );
