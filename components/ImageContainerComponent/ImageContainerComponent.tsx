@@ -15,6 +15,7 @@ interface Props {
   isRecent: boolean;
   dateAndTime: Date;
   saveBtnPress: () => void;
+  reloadAGO?: boolean;
 }
 
 const ImageContainerComponent = ({
@@ -22,15 +23,20 @@ const ImageContainerComponent = ({
   imageList,
   type,
   colorScheme,
+  reloadAGO = false,
   ...props
 }: Props) => {
   const [ago, setago] = useState<string>("");
 
-  useEffect(() => {
+  const changeAgo = () => {
     setago(() => {
       return timeAgo(props.dateAndTime);
     });
-  }, []);
+  };
+
+  useEffect(() => {
+    changeAgo();
+  }, [reloadAGO]);
 
   return (
     <View className="mb-5">
@@ -65,7 +71,8 @@ const ImageContainerComponent = ({
               textStyle="text-[#fff] font-[400] text-[15px]"
             />
           ) : (
-            <Text className="">{ago}</Text>
+            // <Text className="">{ago}</Text>
+            <></>
           )}
         </View>
       </View>

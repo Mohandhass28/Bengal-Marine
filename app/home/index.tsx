@@ -37,6 +37,7 @@ const Home = () => {
   const [showUploaded, setshowUploaded] = useState<boolean>(false);
 
   const ShowUploadedText = () => {
+    ResetAll();
     setshowUploaded(true);
     setTimeout(() => {
       setshowUploaded(false);
@@ -54,6 +55,11 @@ const Home = () => {
       setType(() => "");
     }
   }, [photos]);
+
+  const ResetAll = () => {
+    setphotos([]);
+    reset();
+  };
   return (
     <View className="flex-1 px-4">
       <Stack.Screen
@@ -227,8 +233,7 @@ const Home = () => {
                 );
                 await containerUsecase.saveToLocal(modle);
                 await saveLocal(watch("container_number"));
-                setphotos(() => []);
-                reset();
+                ResetAll();
               }}
               icon={<Entypo name="upload" size={24} color="#fff" />}
               btnStyle="flex-row items-center justify-center mt-4 h-[50] bg-[#131f28] space-x-[14px] mb-2"

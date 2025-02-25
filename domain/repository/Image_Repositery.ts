@@ -14,4 +14,6 @@ export interface ImageReopsitery {
     containerNumber: string,
     userDetails: AuthEntity
   ): Promise<boolean>;
+
+  getImageFromServer(date: string, userId: string): Promise<ContainerEntity[]>;
 }

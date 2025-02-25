@@ -12,6 +12,34 @@ export class ImageRepositoryImpl implements ImageReopsitery {
     this.localStorage = localStorage;
     this.api = api;
   }
+  async getImageFromServer(
+    date: string,
+    userId: string
+  ): Promise<ContainerEntity[]> {
+    const response = await this.api.getImageContainer<
+      ContainerEntity[],
+      { date: string; user_id: string }
+    >("/auth/userwise_container_image_list", { date, user_id: userId });
+    let containers: ContainerModle[] = [];
+    if (response.success) {
+      const container = response as { data: any[] };
+      containers = container.data.map((container) => {
+        return ContainerModle.fromMap({
+          containerNumber: container.cont_no,
+          imageList:
+            Array(container.container_info_image).length > 0
+              ? container.container_info_image
+              : [],
+          dateAndTime: new Date(),
+          type:
+            Array(container.container_info_image).length > 0
+              ? container.container_info_image[0].image_type
+              : "",
+        });
+      });
+    }
+    return containers;
+  }
 
   async getImagesFromLocal(): Promise<ContainerEntity[]> {
     return await this.localStorage.loadImageContainer();

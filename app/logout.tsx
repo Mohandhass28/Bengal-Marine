@@ -3,9 +3,14 @@ import React from "react";
 import clsx from "clsx";
 import { BlurView } from "expo-blur";
 import { Stack, router } from "expo-router";
-import { Text, View, useColorScheme } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "@/store/useAuth";
+
+import {
+  Text,
+  TouchableWithoutFeedback,
+  View,
+  useColorScheme,
+} from "react-native";
 
 const logout = () => {
   const colorScheme = useColorScheme();
@@ -29,6 +34,7 @@ const logout = () => {
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
+          zIndex: 10,
         }}
       >
         <View

@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mohandhass28.myapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -44,7 +48,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "8ae91adb-123c-4246-8d49-1613f09c24ca"
+        "projectId": "4c1fb05c-7db2-464a-a264-33b3b263329f"
       }
     }
   }

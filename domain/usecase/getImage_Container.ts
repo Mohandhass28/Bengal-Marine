@@ -30,4 +30,11 @@ export class GetAllContainer {
     );
     return value;
   }
+
+  async getFromServer(
+    date: string,
+    userId: string
+  ): Promise<ContainerEntity[]> {
+    return await this.repositery.getImageFromServer(date, userId);
+  }
 }

@@ -1,10 +1,14 @@
-import axios, { AxiosError, AxiosInstance } from "axios";
+import { AxiosInstance } from "axios";
 import { ErrorResponse, SuccessResponse, userDetails } from "@/core/types";
-import { ContainerModle } from "@/data/model/Container_Image_Model";
-import { AuthModel } from "@/data/model/auth_model";
 import { AuthEntity } from "@/domain/entity/Auth_entity";
 import { ContainerEntity } from "@/domain/entity/ContainerImage";
 import { UserEntity } from "@/domain/entity/User_entity";
+
+interface GetImageReturn<T> {
+  success: boolean;
+  message: string;
+  data: T | null;
+}
 
 export interface Api {
   _api: AxiosInstance;
@@ -12,10 +16,15 @@ export interface Api {
     container: ContainerEntity,
     userDetails: AuthEntity
   ): Promise<boolean>;
-  getImagesContainer(container: ContainerEntity): Promise<boolean>;
+
   loginWithEmailAndPasswordUser(
     userData: UserEntity
   ): Promise<SuccessResponse<AuthEntity> | ErrorResponse>;
+
+  getImageContainer<T, P>(
+    endpoint: string,
+    param: P
+  ): Promise<GetImageReturn<T>>;
 }
 
 export class ApiImpl implements Api {
@@ -113,7 +122,34 @@ export class ApiImpl implements Api {
     return response;
   }
 
-  async getImagesContainer(container: ContainerEntity): Promise<boolean> {
-    throw new Error("Method not implemented.");
+  async getImageContainer<T, P>(
+    endpoint: string,
+    param: P
+  ): Promise<GetImageReturn<T>> {
+    const response = await this._api
+      .post(endpoint, param, {
+        headers: {
+          "X-Powered-By": "Express",
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then((data) => {
+        return {
+          success: true,
+          message: "Success",
+          data: data.data.data,
+        };
+      })
+      .catch((error) => {
+        console.log(error);
+        return {
+          success: false,
+          message: error.msg,
+          data: null,
+        };
+      });
+
+    return response;
   }
 }
