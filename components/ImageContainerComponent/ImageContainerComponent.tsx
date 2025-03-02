@@ -1,11 +1,23 @@
+import Animated, { BounceOut } from "react-native-reanimated";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import Entypo from "@expo/vector-icons/Entypo";
 import ImageComponent from "../ImageComponent/ImageComponent";
+import NetInfo from "@react-native-community/netinfo";
 import React, { useEffect, useState } from "react";
 import clsx from "clsx";
-import { ColorSchemeName, Text, View } from "react-native";
+import { router } from "expo-router";
 import { photoList } from "@/domain/entity/ContainerImage";
-import { getTime, timeAgo } from "@/utils";
+import { useAuthStore } from "@/store/useAuth";
+import { useImagesContainerUsecases } from "@/store/useImageContainer";
+import { timeAgo } from "@/utils";
+
+import {
+  ActivityIndicator,
+  Alert,
+  ColorSchemeName,
+  Text,
+  View,
+} from "react-native";
 
 interface Props {
   containerNumber: string;
@@ -16,6 +28,9 @@ interface Props {
   dateAndTime: Date;
   saveBtnPress: () => void;
   reloadAGO?: boolean;
+  showAge?: boolean;
+  isLoading?: boolean;
+  LoadData?: () => Promise<void>;
 }
 
 const ImageContainerComponent = ({
@@ -24,16 +39,59 @@ const ImageContainerComponent = ({
   type,
   colorScheme,
   reloadAGO = false,
+  showAge = false,
+  LoadData,
   ...props
 }: Props) => {
   const [ago, setago] = useState<string>("");
-
+  const { containerUsecase } = useImagesContainerUsecases((state) => state);
+  const { user } = useAuthStore((state) => state);
   const changeAgo = () => {
     setago(() => {
       return timeAgo(props.dateAndTime);
     });
   };
+  const [isConnected, setIsConnected] = useState(true);
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      return setIsConnected(state.isConnected ?? false);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
+  const [isLoading, setisLoading] = useState<boolean>(false);
+  const delay = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  const save = async (containerNumber: string) => {
+    try {
+      if (user === undefined) {
+        return router.replace("/auth");
+      }
+      setisLoading(true);
+      await delay(1000);
+      if (!isConnected) {
+        Alert.alert("Status", "No Internet Connections");
+        setisLoading(false);
+      }
+      const status = await containerUsecase.saveToServer(containerNumber, user);
+      Alert.alert("Status", status.message);
+      if (LoadData) {
+        await LoadData();
+      }
+      setisLoading(false);
+      if (status.status === 1) {
+        return true;
+      }
+    } catch (error) {
+      Alert.alert("Status", String(error));
+    } finally {
+      setisLoading(false);
+    }
+    return false;
+  };
   useEffect(() => {
     changeAgo();
   }, [reloadAGO]);
@@ -41,7 +99,7 @@ const ImageContainerComponent = ({
   return (
     <View className="mb-5">
       <View className="px-3">
-        <View className="flex-row justify-between items-center">
+        <View className="flex-row justify-between items-center gap-4">
           <View>
             <Text
               className={clsx([
@@ -60,18 +118,44 @@ const ImageContainerComponent = ({
               {type}
             </Text>
           </View>
+
           {!props.isRecent ? (
-            <ButtonComponent
-              onPress={() => {
-                props.saveBtnPress();
-              }}
-              text="Upload to Server"
-              icon={<Entypo name="upload" size={18} color="#fff" />}
-              btnStyle="flex-row items-center justify-center mt-2 mb-8 h-[33] w-[200] bg-[#131f28] space-x-[14px]"
-              textStyle="text-[#fff] font-[400] text-[15px]"
-            />
+            <View className="">
+              <ButtonComponent
+                disabled={isLoading}
+                onPress={() => {
+                  props.saveBtnPress();
+                  save(containerNumber);
+                }}
+                text="Upload to Server"
+                icon={
+                  <>
+                    {isLoading ? (
+                      <>
+                        <ActivityIndicator />
+                      </>
+                    ) : (
+                      <>
+                        <Entypo name="upload" size={18} color="#fff" />
+                      </>
+                    )}
+                  </>
+                }
+                btnStyle="flex-row items-center justify-center mt-2 mb-8 h-[35] w-[170] bg-[#131f28] flex-1 space-x-[14px] rounded-[7px]"
+                textStyle="text-[#fff] font-[400] text-[15px]"
+              />
+              <View className="flex-row items-center justify-end">
+                <Text
+                  className={clsx([
+                    "font-[500] text-[16px]",
+                    colorScheme === "dark" ? "text-[#fff]" : "text-[#000]",
+                  ])}
+                >
+                  <Text className="">{ago}</Text>
+                </Text>
+              </View>
+            </View>
           ) : (
-            // <Text className="">{ago}</Text>
             <></>
           )}
         </View>

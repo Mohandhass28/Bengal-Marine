@@ -4,6 +4,7 @@ import Constants from "expo-constants";
 import Entypo from "@expo/vector-icons/Entypo";
 import ImageComponent from "@/components/ImageComponent/ImageComponent";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import NetInfo from "@react-native-community/netinfo";
 import React, { useEffect, useState } from "react";
 import TextField from "@/components/TextField/TextField";
 import clsx from "clsx";
@@ -22,10 +23,17 @@ import {
   ScrollView,
   TouchableOpacity,
   useColorScheme,
+  Alert,
 } from "react-native";
 
 const Home = () => {
-  const { control, handleSubmit, watch, reset } = useForm();
+  const {
+    control,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm();
 
   const [photos, setphotos] = useState<imageObject[]>([]);
   const { user } = useAuthStore((state) => state);
@@ -44,11 +52,11 @@ const Home = () => {
     }, 3000);
   };
   const colorScheme = useColorScheme();
-  const saveLocal = (containerNumber: string) => {
+  const save = (containerNumber: string) => {
     if (user === undefined) {
       return router.replace("/auth");
     }
-    containerUsecase.saveToServer(containerNumber, user);
+    const status = containerUsecase.saveToServer(containerNumber, user);
   };
   useEffect(() => {
     if (photos.length === 0) {
@@ -60,6 +68,16 @@ const Home = () => {
     setphotos([]);
     reset();
   };
+  const [isConnected, setIsConnected] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      return setIsConnected(state.isConnected ?? false);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
   return (
     <View className="flex-1 px-4">
       <Stack.Screen
@@ -85,6 +103,11 @@ const Home = () => {
           <View className="px-2">
             <View className="">
               <TextField
+                handleTextChange={(text: string) => {
+                  const filteredText = text.replace(/[^A-Z0-9]/g, "");
+                  console.log(filteredText);
+                  return filteredText;
+                }}
                 inputTextAlign="center"
                 control={control}
                 name="container_number"
@@ -92,11 +115,39 @@ const Home = () => {
                 inputTextStyle="font-[600] text-[20px]"
                 TextStyle="my-0"
                 placeholder=""
-                viewStyle="mt-1"
+                viewStyle={clsx([
+                  "mt-1",
+                  errors?.container_number?.message !== undefined
+                    ? "border-[red]"
+                    : "border-[#ccc]",
+                ])}
                 autoCapitalize="characters"
                 text=""
+                rules={{
+                  required: {
+                    message: "Container Number is required",
+                    value: true,
+                  },
+                  maxLength: {
+                    message: "Container Number must be 11 characters",
+                    value: 11,
+                  },
+                  minLength: {
+                    message: "Container Number must be 11 characters",
+                    value: 11,
+                  },
+                }}
               />
             </View>
+            {errors?.container_number?.message ? (
+              <View className="relative">
+                <Text className="font-[500] text-[14px] text-[#D13434] leading-[21px]">
+                  {errors?.container_number?.message.toString()}
+                </Text>
+              </View>
+            ) : (
+              <></>
+            )}
             <View className="">
               <ButtonComponent
                 text="Upload Pre Container Image"
@@ -221,19 +272,22 @@ const Home = () => {
             <ButtonComponent
               text="Upload to Server"
               onPress={async () => {
-                if (
-                  watch("container_number") === undefined ||
-                  (watch("container_number") as string).length === 4
-                )
+                if (!isConnected) {
+                  Alert.alert("Status", "No Internet Connections");
                   return;
+                }
+                handleSubmit(() => {})();
+                if (watch("container_number").length !== 11) return;
+                if (photos.length === 0) return;
                 const modle = new ContainerModle(
                   watch("container_number"),
                   photos,
                   type
                 );
                 await containerUsecase.saveToLocal(modle);
-                await saveLocal(watch("container_number"));
+                await save(watch("container_number"));
                 ResetAll();
+                ShowUploadedText();
               }}
               icon={<Entypo name="upload" size={24} color="#fff" />}
               btnStyle="flex-row items-center justify-center mt-4 h-[50] bg-[#131f28] space-x-[14px] mb-2"

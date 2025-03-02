@@ -79,6 +79,7 @@ const AuthScreen = () => {
             </View>
             <View className="mt-10">
               <TextField
+                handleTextChange={(text) => text}
                 name="email"
                 text="Email ID"
                 placeholder="Enter Email"
@@ -109,6 +110,7 @@ const AuthScreen = () => {
             )}
             <View className="mt-10 ">
               <TextField
+                handleTextChange={(text) => text}
                 name="password"
                 text="Password"
                 placeholder="Enter Password"

@@ -80,6 +80,7 @@ export const useAuthStore = create<initType>()((set, get) => ({
     set((state) => {
       return { ...state, status: false, user: undefined };
     });
+    router.dismissAll();
     router.replace("/auth");
   },
 }));

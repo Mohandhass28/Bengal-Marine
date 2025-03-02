@@ -15,7 +15,7 @@ export interface Api {
   saveImagesContainer(
     container: ContainerEntity,
     userDetails: AuthEntity
-  ): Promise<boolean>;
+  ): Promise<ImageSaveType>;
 
   loginWithEmailAndPasswordUser(
     userData: UserEntity
@@ -77,7 +77,7 @@ export class ApiImpl implements Api {
   async saveImagesContainer(
     container: ContainerEntity,
     userDetails: AuthEntity
-  ): Promise<boolean> {
+  ): Promise<ImageSaveType> {
     const formData = new FormData();
     formData.append("user_id", userDetails.userID);
     formData.append("container_no", container.containerNumber);
@@ -110,14 +110,18 @@ export class ApiImpl implements Api {
       })
       .then((val) => {
         console.log(val.data);
-        return true;
+        return {
+          status: val.data.status,
+          message: val.data.msg,
+        };
       })
       .catch((error) => {
         console.log(error);
-        return false;
+        return {
+          status: error.data.status,
+          message: error.data.msg,
+        };
       });
-
-    console.log(response);
 
     return response;
   }

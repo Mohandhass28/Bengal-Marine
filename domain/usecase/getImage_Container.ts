@@ -20,9 +20,12 @@ export class GetAllContainer {
   async saveToServer(
     containerNumber: string,
     userDetails: AuthEntity
-  ): Promise<Boolean> {
+  ): Promise<ImageSaveType> {
     if (userDetails.userID === null || userDetails.yardID == null) {
-      return false;
+      return {
+        message: "unable to save the image to server",
+        status: 0,
+      };
     }
     const value = await this.repositery.saveImagesToServer(
       containerNumber,

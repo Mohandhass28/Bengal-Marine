@@ -1,7 +1,9 @@
+import Entypo from "@expo/vector-icons/Entypo";
 import ImageContainerComponent from "@/components/ImageContainerComponent/ImageContainerComponent";
 import React, { useCallback, useEffect, useState } from "react";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
 import { useFocusEffect } from "expo-router";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
 import { ContainerEntity } from "@/domain/entity/ContainerImage";
 import { useAuthStore } from "@/store/useAuth";
 import { useImagesContainerUsecases } from "@/store/useImageContainer";
@@ -28,25 +30,43 @@ const Recent = () => {
 
   const [isRefreshing, setisRefreshing] = useState(false);
 
-  const LoadData = async () => {
+  const [DateValue, setDate] = useState(new Date());
+
+  const LoadData = async (date: Date) => {
     const data = await getImagesFromServer(
-      new Date().toDateString(),
+      date.toDateString(),
       user?.userID || ""
     );
+    console.log(data);
 
-    setLocalData(() => {
+    await setLocalData(() => {
       return data;
     });
   };
   useEffect(() => {
-    LoadData();
+    LoadData(DateValue);
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      LoadData();
+      LoadData(DateValue);
     }, [])
   );
+
+  const OpenDatePicker = () => {
+    DateTimePickerAndroid.open({
+      value: DateValue,
+      onChange: async (event, selectedDate) => {
+        const currentDate = selectedDate || new Date();
+        await setDate(currentDate);
+        if (event.type === "set") {
+          await LoadData(currentDate);
+        }
+      },
+      mode: "date",
+      is24Hour: true,
+    });
+  };
 
   const colorScheme = useColorScheme();
   return (
@@ -55,27 +75,68 @@ const Recent = () => {
         <View className="bg-[#ccccccc6] h-[50px] mt-4 items-center justify-center rounded-[8px]">
           <Text className="font-[400] text-[16px]">Recently Uploaded</Text>
         </View>
-        <ScrollView
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={async () => {
-                setisRefreshing(true);
-                await LoadData();
-                setisRefreshing(false);
+        <TouchableOpacity
+          className="mt-2 justify-end items-end"
+          onPress={OpenDatePicker}
+        >
+          <Text className="text-[#4a4a4a] font-[600] text-[16px]">
+            {DateValue.toLocaleString().slice(0, 9).trim()}
+          </Text>
+          <Entypo
+            name="calendar"
+            size={40}
+            color={colorScheme === "dark" ? "#fff" : "black"}
+          />
+        </TouchableOpacity>
+
+        {isLoadign ? (
+          <View className="items-center justify-center">
+            <ActivityIndicator size={"large"} />
+          </View>
+        ) : (
+          <>
+            <FlatList
+              showsVerticalScrollIndicator={false}
+              data={LocalData}
+              refreshControl={
+                <RefreshControl
+                  refreshing={isRefreshing}
+                  onRefresh={async () => {
+                    setisRefreshing(true);
+                    await LoadData(DateValue);
+                    setisRefreshing(false);
+                  }}
+                />
+              }
+              maxToRenderPerBatch={5}
+              initialNumToRender={5}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({
+                item: { containerNumber, imageList, type, dateAndTime },
+                index,
+              }) => {
+                type =
+                  ((type as unknown) as number) === 1
+                    ? "Pre"
+                    : ((type as unknown) as number) === 2
+                    ? "Post"
+                    : "AV/UR";
+                return (
+                  <ImageContainerComponent
+                    key={index}
+                    reloadAGO={isRefreshing}
+                    saveBtnPress={() => {}}
+                    colorScheme={colorScheme}
+                    containerNumber={containerNumber}
+                    imageList={imageList}
+                    type={type}
+                    dateAndTime={dateAndTime}
+                    isRecent={true}
+                  />
+                );
               }}
             />
-          }
-          className=" mt-4"
-          showsVerticalScrollIndicator={false}
-        >
-          {isLoadign ? (
-            <View className="flex-1 items-center justify-center">
-              <ActivityIndicator />
-            </View>
-          ) : (
-            <>
-              {LocalData.map(
+            {/* {LocalData.map(
                 ({ containerNumber, imageList, type, dateAndTime }, index) => {
                   type =
                     ((type as unknown) as number) === 1
@@ -83,8 +144,10 @@ const Recent = () => {
                       : ((type as unknown) as number) === 2
                       ? "Post"
                       : "AV/UR";
+
                   return (
                     <ImageContainerComponent
+                      key={index}
                       reloadAGO={isRefreshing}
                       saveBtnPress={() => {}}
                       colorScheme={colorScheme}
@@ -96,10 +159,9 @@ const Recent = () => {
                     />
                   );
                 }
-              )}
-            </>
-          )}
-        </ScrollView>
+              )} */}
+          </>
+        )}
       </View>
     </>
   );

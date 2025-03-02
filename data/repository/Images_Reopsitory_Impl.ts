@@ -53,11 +53,14 @@ export class ImageRepositoryImpl implements ImageReopsitery {
   async saveImagesToServer(
     containerNumber: string,
     userDetails: AuthEntity
-  ): Promise<boolean> {
+  ): Promise<ImageSaveType> {
     let serverContainer: ContainerEntity | null = null;
     const containerLocalString = await this.localStorage.getContainerImages();
     if (containerLocalString.length === 0) {
-      return false;
+      return {
+        message: "unable to save the image to server",
+        status: 0,
+      };
     }
 
     let containers: ContainerEntity[] = JSON.parse(containerLocalString);
@@ -71,7 +74,10 @@ export class ImageRepositoryImpl implements ImageReopsitery {
       return true;
     });
     if (serverContainer === null) {
-      return false;
+      return {
+        message: "unable to save the image to server",
+        status: 0,
+      };
     }
 
     const val = await this.api.saveImagesContainer(
@@ -79,7 +85,7 @@ export class ImageRepositoryImpl implements ImageReopsitery {
       userDetails
     );
 
-    if (val) {
+    if (val.status === 1) {
       const status = this.localStorage.saveStringContainerImage(
         JSON.stringify(containers)
       );

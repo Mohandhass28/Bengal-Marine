@@ -13,7 +13,7 @@ export interface ImageReopsitery {
   saveImagesToServer(
     containerNumber: string,
     userDetails: AuthEntity
-  ): Promise<boolean>;
+  ): Promise<ImageSaveType>;
 
   getImageFromServer(date: string, userId: string): Promise<ContainerEntity[]>;
 }

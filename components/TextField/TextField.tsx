@@ -25,9 +25,10 @@ type props = {
   >;
   iconConponent?: React.ReactNode;
   autoCapitalize?: "characters" | "none" | "sentences" | "words" | undefined;
+  handleTextChange: (text: string) => string;
 };
 
-const TextField = (props: props) => {
+const TextField = ({ ...props }: props) => {
   return (
     <View>
       {props.text !== "" ? (
@@ -58,7 +59,7 @@ const TextField = (props: props) => {
                 value={value}
                 textAlign={props?.inputTextAlign}
                 autoCapitalize={props?.autoCapitalize}
-                onChangeText={onChange}
+                onChangeText={(text) => onChange(props.handleTextChange(text))}
                 placeholder={props?.placeholder}
                 secureTextEntry={props.isSecureText}
               />
