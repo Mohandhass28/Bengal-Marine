@@ -53,6 +53,16 @@ const Viewlocal = () => {
           className=" mt-4"
           data={LocalData}
           showsVerticalScrollIndicator={false}
+          keyExtractor={(item, index) => index.toString()}
+          ListEmptyComponent={() => {
+            return (
+              <View className="items-center justify-center h-[100%]">
+                <Text className="text-[#4a4a4a] font-[600] text-[16px]">
+                  No Data Found
+                </Text>
+              </View>
+            );
+          }}
           refreshControl={
             <RefreshControl
               refreshing={isRefreshing}

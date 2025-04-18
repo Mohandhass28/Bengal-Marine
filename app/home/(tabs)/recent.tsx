@@ -18,11 +18,8 @@ import {
 } from "react-native";
 
 const Recent = () => {
-  const {
-    containerUsecase,
-    getImagesFromServer,
-    isLoadign,
-  } = useImagesContainerUsecases((state) => state);
+  const { containerUsecase, getImagesFromServer, isLoadign } =
+    useImagesContainerUsecases((state) => state);
 
   const { user } = useAuthStore((state) => state);
 
@@ -98,6 +95,18 @@ const Recent = () => {
             <FlatList
               showsVerticalScrollIndicator={false}
               data={LocalData}
+              ListEmptyComponent={() => {
+                if (isLoadign) {
+                  return null;
+                }
+                return (
+                  <View className="items-center justify-center h-[100%]">
+                    <Text className="text-[#4a4a4a] font-[600] text-[16px]">
+                      No Data Found
+                    </Text>
+                  </View>
+                );
+              }}
               refreshControl={
                 <RefreshControl
                   refreshing={isRefreshing}
@@ -116,9 +125,9 @@ const Recent = () => {
                 index,
               }) => {
                 type =
-                  ((type as unknown) as number) === 1
+                  (type as unknown as number) === 1
                     ? "Pre"
-                    : ((type as unknown) as number) === 2
+                    : (type as unknown as number) === 2
                     ? "Post"
                     : "AV/UR";
                 return (
