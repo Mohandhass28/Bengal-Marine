@@ -71,18 +71,19 @@ const ImageContainerComponent = ({
         return router.replace("/auth");
       }
       setisLoading(true);
-      await delay(1000);
       if (!isConnected) {
         Alert.alert("Status", "No Internet Connections");
         setisLoading(false);
+        return;
       }
       const status = await containerUsecase.saveToServer(containerNumber, user);
-      Alert.alert("Status", status.message);
+      console.log(status);
+      Alert.alert("Status", status?.message);
       if (LoadData) {
         await LoadData();
       }
       setisLoading(false);
-      if (status.status === 1) {
+      if (status?.status === 1) {
         return true;
       }
     } catch (error) {

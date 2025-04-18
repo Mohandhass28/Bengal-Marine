@@ -37,6 +37,19 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "The app needs access to your camera."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app needs access to your photos to show them.",
+          "savePhotosPermission": "The app needs access to save photos."
+        }
       ]
     ],
     "experiments": {
@@ -48,7 +61,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "45ec9600-51a0-48b6-9e4c-5a84b19abd4f"
+        "projectId": "8ae91adb-123c-4246-8d49-1613f09c24ca"
       }
     }
   }

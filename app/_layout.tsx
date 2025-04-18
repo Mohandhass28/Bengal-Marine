@@ -1,12 +1,11 @@
-import * as SplashScreen from "expo-splash-screen";
-import Constants from "expo-constants";
-import React, { useState } from "react";
-import { useFonts } from "expo-font";
+import React, { createContext, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Redirect, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { Provider } from "react-redux";
 import { useColorScheme } from "@/core/hooks/useColorScheme";
-import { LocalStorageImpl } from "@/data/source/local/local_storage";
+import { store } from "@/redux/store";
 import { useAuthStore } from "@/store/useAuth";
 
 import {
@@ -14,14 +13,11 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-
-SplashScreen.preventAutoHideAsync();
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  });
+
   const { AuthCheck, status } = useAuthStore((state) => state);
 
   const [isLogin, setisLogin] = useState<boolean>();
@@ -36,31 +32,25 @@ export default function RootLayout() {
   useEffect(() => {
     LoginCheck();
   }, []);
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack />
-      {status ? (
-        <>
-          <Redirect href={"/home"} />
-        </>
-      ) : (
-        <>
-          <Redirect href={"/auth"} />
-        </>
-      )}
-
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
+          <Stack />
+          {status ? (
+            <>
+              <Redirect href={"/home"} />
+            </>
+          ) : (
+            <>
+              <Redirect href={"/auth"} />
+            </>
+          )}
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </Provider>
   );
 }

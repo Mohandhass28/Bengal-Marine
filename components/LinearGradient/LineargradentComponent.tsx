@@ -1,6 +1,6 @@
 import React from "react";
-import { View, Text, KeyboardAvoidingView, Platform } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { KeyboardAvoidingView, Platform, Text, View } from "react-native";
 
 const LineargradentComponent = () => {
   return (
@@ -13,7 +13,7 @@ const LineargradentComponent = () => {
         left: 0,
         right: 0,
       }}
-      colors={["#fdfdfd", "#5aeceb", "#131f28"]}
+      colors={["#fdfdfd", "#5AECEB", "#131f28"]}
       locations={[0.24, 0.5, 1]}
     />
   );
