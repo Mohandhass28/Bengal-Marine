@@ -145,6 +145,11 @@ const Home = () => {
                     message: "Container Number must be 11 characters",
                     value: 11,
                   },
+                  pattern: {
+                    message:
+                      "Container Number must be 4 letters followed by 7 numbers",
+                    value: /^[A-Z]{4}[0-9]{7}$/,
+                  },
                 }}
               />
             </View>
